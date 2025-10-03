@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sound Meter Challenge</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #fafd2c, #ecd501);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .game-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      width: 100%;
+    }
+
+   .meter-bar {
+  width: 100%;
+  height: 0%; /* This is dynamically changed via JavaScript */
+  background: linear-gradient(to top, #00b4db, #00db6e, #ffcc00, #ff3300);
+  border-radius: 10px 10px 0 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transition: height 0.1s ease-out;
+}
+
+
+    .countdown-inside {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 6rem;
+  font-weight: bold;
+  color: #ffcc00;
+  text-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
+  z-index: 10;
+  pointer-events: none;
+}
+
+
+
+    .meter-bar {
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(to top, #111111, #f3f164, #f8c805, #ff3300);
+      border-radius: 10px 10px 0 0;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      transition: height 0.1s ease-out;
+    }
+
+    .meter-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .grid-line {
+      width: 100%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .grid-label {
+      position: absolute;
+      right: -40px;
+      transform: translateY(-50%);
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .current-level {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .target-level {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #ffcc00;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .controls {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+
+    #start-btn {
+      background: linear-gradient(to right, #00b4db, #0083b0);
+      color: white;
+    }
+
+    #start-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 180, 219, 0.4);
+    }
+
+    #retry-btn {
+      background: linear-gradient(to right, #ff7e5f, #feb47b);
+      color: white;
+      display: none;
+    }
+
+    #retry-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(255, 126, 95, 0.4);
+    }
+
+    #countdown {
+      font-size: 5rem;
+      font-weight: bold;
+      color: #ffcc00;
+      margin: 20px 0;
+      min-height: 80px;
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+    }
+
+   #progress-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, #00b4db, #0083b0);
+  transition: width 0.1s linear;
+  border-radius: 0 0 10px 10px;
+}
+
+    .result {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin: 20px 0;
+      min-height: 40px;
+    }
+
+    .win {
+      color: #00db6e;
+      text-shadow: 0 0 10px rgba(0, 219, 110, 0.5);
+    }
+
+    .lose {
+      color: #ff3300;
+      text-shadow: 0 0 10px rgba(255, 51, 0, 0.5);
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: red;
+      opacity: 0.8;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .level-indicator {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 500px;
+      margin-top: 10px;
+    }
+
+    .level {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    .level-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-bottom: 5px;
+    }
+
+   @media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
+  .game-area {
+    gap: 20px;
+  }
+
+  .meter-container {
+    height: 250px; /* Already defined, keep it */
+    position: relative;
+    width: 100%;
+  }
+
+  .meter-bar {
+    border-radius: 8px 8px 0 0;
+  }
+
+  .countdown-inside {
+    font-size: 4rem !important;
+  }
+
+  .current-level,
+  .target-level {
+    font-size: 1rem;
+    top: 5px;
+  }
+
+  #countdown {
+    font-size: 3.5rem;
+    min-height: 60px;
+    margin: 15px 0;
+  }
+
+  button {
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  #progress-container {
+    height: 15px;
+  }
+
+  #progress-bar {
+    border-radius: 0 0 8px 8px;
+  }
+
+  .result {
+    font-size: 1.2rem;
+    margin: 15px 0;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="game-area">
+      <div class="meter-container">
+  <div class="meter-bar" id="meter-bar"></div>
+  <div class="meter-grid" id="meter-grid"></div>
+  <div class="current-level" id="current-level">Current: 0 dB</div>
+  <div class="target-level" id="target-level">Target: 30 dB</div>
+  <div id="countdown" class="countdown-inside"></div> <!-- Moved here -->
+</div>
+
+
+      <div id="countdown" class="countdown-inside"></div>
+
+     
+      
+      <div class="result" id="result"></div>
+      
+      <div class="controls">
+        <button id="start-btn">Start</button>
+        <button id="retry-btn">Retry</button>
+      </div>
+    </div>
+
+    
+         <div id="progress-container">
+        <div id="progress-bar"></div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script>
+    let isMeasuring = false;
+    let streamRef = null;
+    let audioContext = null;
+    let analyser = null;
+
+    const startBtn = document.getElementById('start-btn');
+    const retryBtn = document.getElementById('retry-btn');
+    const countdownEl = document.getElementById('countdown');
+    const progressBar = document.getElementById('progress-bar');
+    const meterBar = document.getElementById('meter-bar');
+    const currentLevel = document.getElementById('current-level');
+    const targetLevel = document.getElementById('target-level');
+    const resultEl = document.getElementById('result');
+    const meterGrid = document.getElementById('meter-grid');
+
+    startBtn.addEventListener('click', startGame);
+    retryBtn.addEventListener('click', resetGame);
+
+    // Create meter grid lines
+    function createMeterGrid() {
+      const levels = [0, 20, 40, 60, 80, 100];
+      levels.forEach(level => {
+        const line = document.createElement('div');
+        line.className = 'grid-line';
+        line.style.top = `${100 - level}%`;
+        
+        const label = document.createElement('div');
+        label.className = 'grid-label';
+        label.textContent = `${level} dB`;
+        label.style.top = `${100 - level}%`;
+        
+        meterGrid.appendChild(line);
+        meterGrid.appendChild(label);
+      });
+    }
+
+    function startGame() {
+      if (isMeasuring) return;
+      startBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      countdownEl.innerText = "";
+      progressBar.style.width = '0%';
+      resultEl.innerText = "";
+      resultEl.className = "result";
+
+      let count = 3;
+      countdownEl.innerText = count;
+      const countInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownEl.innerText = count;
+        } else {
+          clearInterval(countInterval);
+          countdownEl.innerText = "GO!";
+          setTimeout(() => {
+            countdownEl.innerText = "";
+            beginMeasurement();
+          }, 1000);
+        }
+      }, 1000);
+    }
+
+    function beginMeasurement() {
+      isMeasuring = true;
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+          streamRef = stream;
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          const microphone = audioContext.createMediaStreamSource(stream);
+          microphone.connect(analyser);
+
+          analyser.fftSize = 2048;
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+
+          let highestDecibel = -Infinity;
+          const startTime = Date.now();
+          const duration = 5000;
+          const targetDb = 30;
+
+          function measure() {
+            analyser.getByteFrequencyData(dataArray);
+            let sumSquares = 0;
+            for (let i = 0; i < bufferLength; i++) {
+              sumSquares += dataArray[i] * dataArray[i];
+            }
+            const rms = Math.sqrt(sumSquares / bufferLength);
+            const decibels = 20 * Math.log10(rms);
+
+            // Update meter display
+            let displayDb = decibels;
+            if (rms < 0.01 || !isFinite(decibels)) {
+              displayDb = 0;
+            } else if (decibels > highestDecibel) {
+              highestDecibel = decibels;
+            }
+
+            // Update visual elements
+            const meterHeight = Math.min(Math.max(displayDb, 0), 100);
+            meterBar.style.height = `${meterHeight}%`;
+            currentLevel.textContent = `Current: ${displayDb.toFixed(1)} dB`;
+            targetLevel.textContent = `Target: ${targetDb} dB`;
+
+            const elapsed = Date.now() - startTime;
+            const percent = Math.min((elapsed / duration) * 100, 100);
+            progressBar.style.width = percent + '%';
+
+            if (elapsed < duration) {
+              requestAnimationFrame(measure);
+            } else {
+              finishMeasurement(highestDecibel);
+            }
+          }
+
+          measure();
+        })
+        .catch(function(err) {
+          isMeasuring = false;
+          retryBtn.style.display = 'inline-block';
+          resultEl.innerText = "Error: Could not access microphone";
+          resultEl.className = "result lose";
+        });
+    }
+
+    function finishMeasurement(highestDecibel) {
+      if (streamRef) {
+        streamRef.getTracks().forEach(track => track.stop());
+      }
+      
+      if (audioContext) {
+        audioContext.close();
+      }
+
+      const winThreshold = 30;
+      if (highestDecibel >= winThreshold) {
+        resultEl.innerText = `Congratulations! You reached ${highestDecibel.toFixed(1)} dB!`;
+        resultEl.className = "result win";
+        triggerConfetti();
+        playWinSound();
+      } else {
+        resultEl.innerText = `You reached ${highestDecibel.toFixed(1)} dB. Try again to reach ${winThreshold} dB!`;
+        resultEl.className = "result lose";
+      }
+
+      isMeasuring = false;
+      retryBtn.style.display = 'inline-block';
+    }
+
+    function resetGame() {
+      progressBar.style.width = '0%';
+      countdownEl.innerText = "";
+      meterBar.style.height = '0%';
+      currentLevel.textContent = "Current: 0 dB";
+      resultEl.innerText = "";
+      startBtn.style.display = 'inline-block';
+      retryBtn.style.display = 'none';
+    }
+
+    function triggerConfetti() {
+      const confCount = 150;
+      const colors = ['#f94144','#f3722c','#f9c74f','#90be6d','#43aa8b','#577590', '#00b4db', '#ffcc00'];
+      
+      for (let i = 0; i < confCount; i++) {
+        createConfettiPiece(colors[Math.floor(Math.random() * colors.length)]);
+      }
+      
+      setTimeout(() => {
+        document.querySelectorAll('.confetti').forEach(el => el.remove());
+      }, 5000);
+    }
+
+    function createConfettiPiece(color) {
+      const el = document.createElement('div');
+      el.classList.add('confetti');
+      el.style.background = color;
+      document.body.appendChild(el);
+
+      const startX = Math.random() * window.innerWidth;
+      const startY = -20;
+      el.style.transform = `translate(${startX}px, ${startY}px)`;
+
+      const endY = window.innerHeight + 20;
+      const duration = 2000 + Math.random() * 1000;
+      const deltaX = (Math.random() - 0.5) * 300;
+      const rotation = Math.random() * 720 - 360;
+      const startTime = Date.now();
+
+      function animate() {
+        const elapsed = Date.now() - startTime;
+        const t = elapsed / duration;
+        if (t < 1) {
+          const curY = startY + t * (endY - startY);
+          const curX = startX + t * deltaX;
+          const curRotation = t * rotation;
+          el.style.transform = `translate(${curX}px, ${curY}px) rotate(${curRotation}deg)`;
+          el.style.opacity = (1 - t).toString();
+          requestAnimationFrame(animate);
+        } else {
+          el.remove();
+        }
+      }
+
+      animate();
+    }
+
+    function playWinSound() {
+      // Create a simple victory sound using the Web Audio API
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    // Initialize the game
+    window.addEventListener('load', createMeterGrid);
+  </script>
+</body>
+</html>
